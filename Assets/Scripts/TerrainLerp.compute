@@ -1,0 +1,52 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+RWStructuredBuffer<float3> _Positions;
+RWStructuredBuffer<float3> _Positions2;
+RWStructuredBuffer<float> _Heights;
+
+float _t;
+float maxPoint = 251;
+int _Groupsize;
+int offset = 500;
+
+[numthreads(64,1,1)]
+void CSMain (uint id : SV_DispatchThreadID, uint gid : SV_GROUPID){
+    int x = id % maxPoint;
+    int y = floor(id / maxPoint);
+
+    int newX = x + offset;
+    int newY = y + offset;
+    int newIndex = newY * 2500 + newX;
+
+
+    float3 oldPos = _Positions[id];
+
+    // newIndex = x+1 * 251 + y;
+    float3 newPos = float3(oldPos.x,_Positions[(id + 251) % (251*251)].y,oldPos.z);
+
+    float3 pos1 = _Positions[id];
+    float3 pos2 = _Positions2[id];
+
+    newPos = float3(pos1.x,_t * pos1.y + (1 - _t) * pos2.y,pos1.z);
+    // newPos = float3(float(x),float(y),float(newIndex));
+
+
+
+    // float h = _t * _Heights[id] + (1 - _t) * oldPos.y;
+    // float3 newPos = float3(oldPos.x,h,oldPos.z);
+
+
+
+    // int x = id;
+    // float3 newPos = _Positions[id];
+    // newPos.x = float(id);
+    // newPos.z = float(gid);
+    // newPos.y = float(50);
+    // newPos = float3(100.0f,20.0f,3.0f);
+    _Positions[id] = newPos;
+
+    // if(id < (maxPoint * maxPoint)){
+    //     _Positions[id].y = -100.0f;
+    // }
+}
